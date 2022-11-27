@@ -23,7 +23,10 @@ createmigrate: cmd-exists-migrate
 sqlc: cmd-exists-sqlc
 	sqlc generate
 
-.PHONY: postgres createdb dropdb migrateup migratedown createmigrate sqlc
+test:
+	go test -v -cover ./...
+
+.PHONY: postgres createdb dropdb migrateup migratedown createmigrate sqlc test
 
 ifneq (,$(wildcard ./.env))
     include .env
