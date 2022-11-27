@@ -6,23 +6,24 @@ import (
 	"os"
 	"testing"
 
-	_ "github.com/joho/godotenv/autoload"
 	_ "github.com/lib/pq" // for loading postgres driver
 )
 
 const dbDriver = "postgres"
+const dbSource = "postgresql://root:password@localhost:5432/simple_bank?sslmode=disable"
 
-var dbSource = "postgresql://root:password@localhost:5432/simple_bank?sslmode=disable"
 var testQueries *Queries
+var testDB *sql.DB
 
 func TestMain(m *testing.M) {
+	var err error
 
-	conn, err := sql.Open(dbDriver, dbSource)
+	testDB, err = sql.Open(dbDriver, dbSource)
 	if err != nil {
 		log.Fatal("cannot connect to db: ", err)
 	}
 
-	testQueries = New(conn)
+	testQueries = New(testDB)
 
 	os.Exit(m.Run())
 }
