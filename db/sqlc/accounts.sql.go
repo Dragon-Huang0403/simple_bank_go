@@ -9,6 +9,35 @@ import (
 	"context"
 )
 
+const addAccountBalance = `-- name: AddAccountBalance :one
+UPDATE
+  accounts
+SET
+  balance = balance + $2
+WHERE
+  id = $1
+RETURNING
+  id, name, balance, currency, created_at
+`
+
+type AddAccountBalanceParams struct {
+	ID     int64 `json:"id"`
+	Amount int64 `json:"amount"`
+}
+
+func (q *Queries) AddAccountBalance(ctx context.Context, arg AddAccountBalanceParams) (Account, error) {
+	row := q.db.QueryRowContext(ctx, addAccountBalance, arg.ID, arg.Amount)
+	var i Account
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Balance,
+		&i.Currency,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
 const createAccount = `-- name: CreateAccount :one
 INSERT INTO accounts (name, balance, currency)
   VALUES ($1, $2, $3)
@@ -68,6 +97,29 @@ func (q *Queries) GetAccount(ctx context.Context, id int64) (Account, error) {
 	return i, err
 }
 
+const getAccountForUpdate = `-- name: GetAccountForUpdate :one
+SELECT
+  id, name, balance, currency, created_at
+FROM
+  accounts
+WHERE
+  id = $1
+FOR NO KEY UPDATE
+`
+
+func (q *Queries) GetAccountForUpdate(ctx context.Context, id int64) (Account, error) {
+	row := q.db.QueryRowContext(ctx, getAccountForUpdate, id)
+	var i Account
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Balance,
+		&i.Currency,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
 const getListAccounts = `-- name: GetListAccounts :many
 SELECT
   id, name, balance, currency, created_at
@@ -116,20 +168,20 @@ const updateAccount = `-- name: UpdateAccount :one
 UPDATE
   accounts
 SET
-  balance = $1
+  balance = $2
 WHERE
-  id = $2
+  id = $1
 RETURNING
   id, name, balance, currency, created_at
 `
 
 type UpdateAccountParams struct {
-	Balance int64 `json:"balance"`
 	ID      int64 `json:"id"`
+	Balance int64 `json:"balance"`
 }
 
 func (q *Queries) UpdateAccount(ctx context.Context, arg UpdateAccountParams) (Account, error) {
-	row := q.db.QueryRowContext(ctx, updateAccount, arg.Balance, arg.ID)
+	row := q.db.QueryRowContext(ctx, updateAccount, arg.ID, arg.Balance)
 	var i Account
 	err := row.Scan(
 		&i.ID,
