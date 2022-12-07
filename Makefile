@@ -12,7 +12,7 @@ dropdb: cmd-exists-docker
 	docker exec -it ${DATABASE_PROJECTNAME} dropdb ${DATABASE_TABLENAME}
 
 migrateup: cmd-exists-migrate
-	migrate -path db/migration -database "${DATABASE_URL}" -verbose up
+	migrate -path db/migration -database "postgresql://root:password@localhost:5432/simple_bank?sslmode=disable" -verbose up
 
 migratedown: cmd-exists-migrate
 	migrate -path db/migration -database "${DATABASE_URL}" -verbose down
