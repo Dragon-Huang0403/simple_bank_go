@@ -26,7 +26,10 @@ sqlc: cmd-exists-sqlc
 test:
 	go test -v -cover ./...
 
-.PHONY: postgres createdb dropdb migrateup migratedown createmigrate sqlc test
+server:
+	go run main.go
+
+.PHONY: postgres createdb dropdb migrateup migratedown createmigrate sqlc test server
 
 ifneq (,$(wildcard ./.env))
     include .env
